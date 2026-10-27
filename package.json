@@ -1,0 +1,39 @@
+{
+  "name": "orders-ecommerce-api",
+  "version": "1.0.0",
+  "description": "API REST para gestion de pedidos, productos y clientes - Fase 2 ACS",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "test:coverage": "jest --coverage --runInBand --detectOpenHandles --forceExit",
+    "test:api": "newman run tests/api/orders_api_collection.json --reporters cli,json --reporter-json-export tests/api/newman-results.json",
+    "test:load": "k6 run tests/load/load-test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "newman": "^6.2.1",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/server.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "clover"
+    ]
+  }
+}

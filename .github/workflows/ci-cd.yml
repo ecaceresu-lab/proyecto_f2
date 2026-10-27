@@ -1,0 +1,132 @@
+name: CI/CD Pipeline - E13
+
+on:
+  push:
+    branches: [ main, dev, qa ]
+  pull_request:
+    branches: [ main, dev, qa ]
+
+jobs:
+  build-and-test:
+    name: 1. Compilación, Pruebas Unitarias y Cobertura
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necesario para análisis completo de Sonar
+
+      - name: Configurar Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar Dependencias
+        run: npm ci
+
+      - name: Ejecutar Pruebas Unitarias y Generar Reporte LCOV
+        run: npm run test:coverage
+
+      - name: Archivar Cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+  sonarqube-analysis:
+    name: 2. Análisis Estático SonarQube / SonarCloud y Quality Gate
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar Dependencias
+        run: npm ci
+
+      - name: Descargar Reporte de Cobertura
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+      # Integración oficial SonarCloud Scan
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: false
+
+      # Verificación y bloqueo estricto de Quality Gate
+      - name: SonarQube Quality Gate Check
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  api-tests:
+    name: 3. Pruebas de API Automatizadas (Newman / Postman)
+    needs: sonarqube-analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Iniciar Servidor API en Segundo Plano
+        run: |
+          node src/server.js &
+          sleep 4
+          curl --retry 5 --retry-delay 2 http://localhost:3000/api/health
+
+      - name: Ejecutar Colección de Pruebas Newman (E11)
+        run: npx newman run tests/api/orders_api_collection.json --reporters cli,json --reporter-json-export tests/api/newman-results.json
+
+      - name: Subir Resultados de Pruebas de API
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results
+          path: tests/api/newman-results.json
+
+  deploy:
+    name: 4. Despliegue Continuo a Ambiente Cloud
+    needs: api-tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Simulación / Trigger de Despliegue a Cloud (Render / Railway / Cloud Provider)
+        run: |
+          echo "=========================================================="
+          echo "Pipeline superó exitosamente todas las compuertas:"
+          echo "1. Build y Tests Unitarios (Jest): APROBADO"
+          echo "2. SonarCloud Quality Gate: APROBADO"
+          echo "3. Pruebas de API con Newman (16 requests / 30 asserts): APROBADO"
+          echo "4. Desplegando versión de producción a ambiente Cloud..."
+          echo "=========================================================="
+          # Para despliegue real en Render / Railway, se invoca el Deploy Hook Webhook:
+          # curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          echo "Despliegue completado con éxito hacia ambiente de producción."

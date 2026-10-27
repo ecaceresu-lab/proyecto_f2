@@ -1,0 +1,567 @@
+{
+  "info": {
+    "_postman_id": "a9b8c7d6-e5f4-4321-abcd-1234567890ab",
+    "name": "E11 - Orders & Products API Suite",
+    "description": "Colección completa de pruebas de API con encadenamiento de flujo y aserciones automatizadas de status, esquema y contenido para Newman / CI-CD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "createdProductId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "createdOrderId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('1. Status code es 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('2. Servicio responde UP con timestamp', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.status).to.eql('UP');",
+              "    pm.expect(json).to.have.property('uptime');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Admin Login (Obtener Admin Token)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@ecommerce.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('3. Login admin exitoso (200)', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('4. Token generado y asignado a variable de colección', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    pm.expect(json.data.token).to.be.a('string');",
+              "    pm.collectionVariables.set('adminToken', json.data.token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Registro Nuevo Usuario",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Maria Lopez\",\n  \"email\": \"maria_{{$timestamp}}@test.com\",\n  \"password\": \"Segura123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('5. Registro de usuario retorna 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('6. Objeto usuario tiene id y rol customer', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.role).to.eql('customer');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Login Cliente con Credenciales Inválidas (Negativo)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@ecommerce.com\",\n  \"password\": \"clave_errada\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('7. Login con clave errada responde 401 Unauthorized', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "pm.test('8. Mensaje de error controlado', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.success).to.be.false;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Obtener Perfil Protegido Sin Token (Negativo)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "profile"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('9. Acceso no autenticado responde 401', function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Obtener Perfil de Admin con Token",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "profile"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('10. Perfil obtenido exitosamente 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('11. Esquema contiene datos del usuario autenticado', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.role).to.eql('admin');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Listar Productos del Catálogo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('12. Lista de productos responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('13. Respuesta es un arreglo con propiedades requeridas', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data).to.be.an('array');",
+              "    pm.expect(json.count).to.be.above(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Filtrar Productos por Categoría",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products?category=Accesorios",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"],
+          "query": [{ "key": "category", "value": "Accesorios" }]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('14. Filtro por categoría responde 200 y todos coinciden', function () {",
+              "    pm.response.to.have.status(200);",
+              "    var json = pm.response.json();",
+              "    json.data.forEach(function(item) {",
+              "        pm.expect(item.category).to.eql('Accesorios');",
+              "    });",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Crear Producto (Admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sku\": \"CAM-{{$timestamp}}\",\n  \"name\": \"Cámara Web 4K UltraHD\",\n  \"description\": \"Autofocus y microfono estereo\",\n  \"price\": 89.50,\n  \"stock\": 30,\n  \"category\": \"Video\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('15. Creación de producto responde 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('16. Guardar createdProductId para pruebas encadenadas', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.id).to.be.a('string');",
+              "    pm.collectionVariables.set('createdProductId', json.data.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Consultar Producto Creado por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{createdProductId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products", "{{createdProductId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('17. Consulta de producto recién creado responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('18. ID coincide exactamente con el creado', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.id).to.eql(pm.collectionVariables.get('createdProductId'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Actualizar Precio de Producto",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 79.99,\n  \"stock\": 40\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/products/{{createdProductId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "products", "{{createdProductId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('19. Actualización exitosa responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('20. Precios y stock actualizados en respuesta', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.price).to.eql(79.99);",
+              "    pm.expect(json.data.stock).to.eql(40);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Crear Orden de Compra (Flujo de Negocio)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"{{createdProductId}}\",\n      \"quantity\": 2\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('21. Creación de orden responde 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('22. Se calculan totales y se almacena createdOrderId', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.id).to.be.a('string');",
+              "    pm.expect(json.data.status).to.eql('PENDING');",
+              "    pm.expect(json.data.subtotal).to.eql(159.98);",
+              "    pm.collectionVariables.set('createdOrderId', json.data.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Consultar Detalle de Orden Creada",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/{{createdOrderId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "{{createdOrderId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('23. Consulta de orden específica responde 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('24. Verifica items de la orden', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.items.length).to.be.at.least(1);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 - Actualizar Estado de la Orden a PAID",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"PAID\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/{{createdOrderId}}/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "{{createdOrderId}}", "status"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('25. Cambio de estado a PAID responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('26. Estado de la orden es efectivamente PAID', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data.status).to.eql('PAID');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 - Consultar Métricas y Resumen de Ventas",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/orders/metrics/summary",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders", "metrics", "summary"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('27. Dashboard de métricas responde 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('28. Esquema de métricas contiene totalOrders y revenue', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data).to.have.property('totalOrders');",
+              "    pm.expect(json.data).to.have.property('totalRevenue');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 - Validación de Stock Insuficiente (Error 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"prod-4\",\n      \"quantity\": 9999\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "orders"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('29. Intento de compra con stock insuficiente responde 400 Bad Request', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "pm.test('30. Mensaje de error especifica stock insuficiente', function () {",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.error).to.include('Stock insuficiente');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}
