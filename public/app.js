@@ -47,7 +47,7 @@ function renderProductos(products) {
         <p style="font-size: 0.8rem; color: var(--text-muted);">${p.description}</p>
       </div>
       <div>
-        <div class="product-price">$${p.price.toFixed(2)}</div>
+        <div class="product-price">Q${p.price.toFixed(2)}</div>
         <div class="product-stock">Stock disponible: <strong>${p.stock}</strong></div>
         <button class="btn-buy" onclick="agregarAlCarrito('${p.id}')" ${p.stock <= 0 ? 'disabled' : ''}>
           ${p.stock > 0 ? '+ Agregar al Pedido' : 'Agotado'}
@@ -88,9 +88,9 @@ function renderCarrito() {
   if (cart.length === 0) {
     container.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 35px;">El carrito está vacío. Haz clic en "Agregar" en algún producto.</p>';
     btn.disabled = true;
-    document.getElementById('cart-subtotal').textContent = '$0.00';
-    document.getElementById('cart-tax').textContent = '$0.00';
-    document.getElementById('cart-total').textContent = '$0.00';
+    document.getElementById('cart-subtotal').textContent = 'Q0.00';
+    document.getElementById('cart-tax').textContent = 'Q0.00';
+    document.getElementById('cart-total').textContent = 'Q0.00';
     return;
   }
 
@@ -104,10 +104,10 @@ function renderCarrito() {
       <div class="cart-item-row">
         <div>
           <strong>${item.name}</strong>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">$${item.price.toFixed(2)} x ${item.quantity}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Q${item.price.toFixed(2)} x ${item.quantity}</div>
         </div>
         <div>
-          <span>$${itemTotal.toFixed(2)}</span>
+          <span>Q${itemTotal.toFixed(2)}</span>
           <button style="background: none; border: none; color: #ef4444; margin-left: 8px; cursor: pointer;" onclick="eliminarDelCarrito('${item.productId}')">✕</button>
         </div>
       </div>
@@ -117,9 +117,9 @@ function renderCarrito() {
   const tax = Math.round(subtotal * 0.12 * 100) / 100;
   const total = Math.round((subtotal + tax) * 100) / 100;
 
-  document.getElementById('cart-subtotal').textContent = `$${subtotal.toFixed(2)}`;
-  document.getElementById('cart-tax').textContent = `$${tax.toFixed(2)}`;
-  document.getElementById('cart-total').textContent = `$${total.toFixed(2)}`;
+  document.getElementById('cart-subtotal').textContent = `Q${subtotal.toFixed(2)}`;
+  document.getElementById('cart-tax').textContent = `Q${tax.toFixed(2)}`;
+  document.getElementById('cart-total').textContent = `Q${total.toFixed(2)}`;
 }
 
 function eliminarDelCarrito(productId) {
@@ -148,7 +148,7 @@ async function procesarOrden() {
 
     const data = await res.json();
     if (res.ok) {
-      alert(`🎉 ¡Orden ${data.data.id} creada con éxito!\nTotal facturado: $${data.data.total}`);
+      alert(`🎉 ¡Orden ${data.data.id} creada con éxito!\nTotal facturado: Q${data.data.total}`);
       cart = [];
       renderCarrito();
       await cargarProductos();
@@ -172,7 +172,7 @@ async function cargarMetricas() {
     const result = await res.json();
     if (result.success) {
       document.getElementById('metric-orders').textContent = result.data.totalOrders;
-      document.getElementById('metric-revenue').textContent = `$${result.data.totalRevenue.toFixed(2)}`;
+      document.getElementById('metric-revenue').textContent = `Q${result.data.totalRevenue.toFixed(2)}`;
     }
   } catch (err) {
     console.error('Error cargando metricas:', err);
