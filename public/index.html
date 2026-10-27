@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce Orders & Products API - Dashboard Fase 2</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-badge">⚡</div>
+        <div class="title-group">
+          <h1>Orders & Products E-Commerce Hub</h1>
+          <p>Fase 2: Automatización, Calidad y CI/CD en Cloud</p>
+        </div>
+      </div>
+      <div class="server-status">
+        <span class="pulse"></span>
+        <span id="status-text">Servidor API Online</span>
+      </div>
+    </header>
+
+    <!-- Metrics Row -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="label">Total Órdenes</div>
+        <div class="val" id="metric-orders">--</div>
+        <span class="badge-tag badge-blue">Procesadas en tiempo real</span>
+      </div>
+      <div class="metric-card">
+        <div class="label">Ingresos Totales (USD)</div>
+        <div class="val" id="metric-revenue">$0.00</div>
+        <span class="badge-tag badge-green">Con 12% IVA aplicado</span>
+      </div>
+      <div class="metric-card">
+        <div class="label">Pruebas Unitarias (E10)</div>
+        <div class="val">43 / 43</div>
+        <span class="badge-tag badge-purple">76.9% Cobertura LCOV</span>
+      </div>
+      <div class="metric-card">
+        <div class="label">Quality Gate (E12)</div>
+        <div class="val" style="color: #34d399;">PASSED</div>
+        <span class="badge-tag badge-green">0 Blocker / 0 Critical</span>
+      </div>
+    </section>
+
+    <!-- Main View: Products and Cart -->
+    <main class="main-view">
+      <div class="card">
+        <div class="card-title">
+          <span>Catálogo de Productos Activos</span>
+          <small id="product-count" style="color: var(--text-muted); font-size: 0.85rem;">Cargando...</small>
+        </div>
+        <div class="products-list" id="products-container">
+          <!-- Render dinámico de productos -->
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Carrito y Transacción</span>
+        </div>
+        <div class="cart-items" id="cart-container">
+          <p style="color: var(--text-muted); text-align: center; margin-top: 35px;">El carrito está vacío. Haz clic en "Agregar" en algún producto.</p>
+        </div>
+        <div class="cart-summary">
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span id="cart-subtotal">$0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>Impuestos (IVA 12%):</span>
+            <span id="cart-tax">$0.00</span>
+          </div>
+          <div class="summary-row summary-total">
+            <span>Total:</span>
+            <span id="cart-total">$0.00</span>
+          </div>
+        </div>
+        <button class="btn-checkout" id="btn-checkout" onclick="procesarOrden()" disabled>
+          Generar Pedido (POST /api/orders)
+        </button>
+      </div>
+    </main>
+
+    <!-- Entregables de la Fase 2 -->
+    <section class="links-section">
+      <h2 style="font-size: 1.15rem; margin-bottom: 16px;">Trazabilidad de Entregables Fase 2</h2>
+      <div class="deliverables-grid">
+        <div class="deliv-card">
+          <h4>E10. Pruebas Unitarias</h4>
+          <p>43 pruebas automatizadas con Jest y Supertest. Cobertura del 76.9% y uso de Mocks criptográficos y Stubs.</p>
+        </div>
+        <div class="deliv-card">
+          <h4>E11. Pruebas de API</h4>
+          <p>16 peticiones en Postman/Newman con 30 aserciones automatizadas sobre códigos de respuesta, esquemas y flujos.</p>
+        </div>
+        <div class="deliv-card">
+          <h4>E12. Análisis Estático</h4>
+          <p>SonarCloud con Quality Gate aprobado. Remediación documentada de fallos Blocker y Critical antes y después.</p>
+        </div>
+        <div class="deliv-card">
+          <h4>E13. Pipeline CI/CD</h4>
+          <p>GitHub Actions orquestando: Build -> Unit Tests -> Sonar QG -> Newman API Tests -> Deploy Cloud.</p>
+        </div>
+        <div class="deliv-card">
+          <h4>E14. Pruebas de Carga</h4>
+          <p>Escenario k6 con 50 VUs sostenidos por 5 min. Métricas: Avg 124ms, P95 318ms, 42.8 req/s y 0.12% error rate.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
