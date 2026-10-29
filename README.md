@@ -7,7 +7,7 @@ API REST para la gestión de productos, órdenes de compra y autenticación de u
 ## 🚀 Estructura del Repositorio
 
 ```text
-alvin/
+Edwin/
 ├── .github/
 │   └── workflows/
 │       └── ci-cd.yml                # [E13] Pipeline GitHub Actions secuencial
@@ -53,11 +53,11 @@ npm run test:api
 * Resultado: **16 solicitudes HTTP y 30 aserciones automatizadas** sobre status code, esquemas JSON y datos de negocio con flujo encadenado.
 
 ### 4. [E12] Análisis Estático y Quality Gate (SonarQube / SonarCloud)
-* Archivo de configuración: [sonar-project.properties](file:///d:/xampp/htdocs/alvin/sonar-project.properties).
-* Reporte detallado de estado inicial, remediación de hallazgos **Blocker y Critical** y comparativa antes/después en: [E12_analisis_estatico_sonarqube.md](file:///d:/xampp/htdocs/alvin/docs/E12_analisis_estatico_sonarqube.md).
+* Archivo de configuración: [sonar-project.properties](file:///d:/xampp/htdocs/Edwin/sonar-project.properties).
+* Reporte detallado de estado inicial, remediación de hallazgos **Blocker y Critical** y comparativa antes/después en: [E12_analisis_estatico_sonarqube.md](file:///d:/xampp/htdocs/Edwin/docs/E12_analisis_estatico_sonarqube.md).
 
 ### 5. [E13] Pipeline CI/CD (GitHub Actions)
-* Definición: [.github/workflows/ci-cd.yml](file:///d:/xampp/htdocs/alvin/.github/workflows/ci-cd.yml).
+* Definición: [.github/workflows/ci-cd.yml](file:///d:/xampp/htdocs/Edwin/.github/workflows/ci-cd.yml).
 * Flujo de ejecución secuencial:
   1. `build-and-test` (Compilación, unit tests con Jest y extracción de cobertura).
   2. `sonarqube-analysis` (Escaneo SonarCloud y verificación estricta de Quality Gate que bloquea si falla).
@@ -68,9 +68,9 @@ npm run test:api
 ```bash
 k6 run tests/load/load-test.js
 ```
-* Script: [load-test.js](file:///d:/xampp/htdocs/alvin/tests/load/load-test.js).
+* Script: [load-test.js](file:///d:/xampp/htdocs/Edwin/tests/load/load-test.js).
 * Escenario: Rampa hasta **50 VUs sostenida durante 5 minutos** evaluando `GET /api/products` y `POST /api/orders`.
-* Métricas reportadas (Avg response time, P95, Throughput y tasa de error) documentadas en: [E14_pruebas_de_carga_k6.md](file:///d:/xampp/htdocs/alvin/docs/E14_pruebas_de_carga_k6.md).
+* Métricas reportadas (Avg response time, P95, Throughput y tasa de error) documentadas en: [E14_pruebas_de_carga_k6.md](file:///d:/xampp/htdocs/Edwin/docs/E14_pruebas_de_carga_k6.md).
 
 ---
 
